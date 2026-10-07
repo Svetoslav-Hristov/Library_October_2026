@@ -1,0 +1,31 @@
+name: Build test and deploy
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+    - name: Use Node.js 24.x
+      uses: actions/setup-node@v4
+      with:
+        node-version: 24.x
+        cache: 'npm'
+    - name: Install node packages      
+      run: npm install
+    - name: Run Back End  
+      run: npm run start &
+    - name: Run Front End
+      run: npm run server
+    - name: Install Playwright
+      run: npx playwright install
+    - name: Run test  
+      run: npm test
