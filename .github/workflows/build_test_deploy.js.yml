@@ -24,7 +24,7 @@ jobs:
     - name: Run Back End  
       run: npm run start &
     - name: Run Front End
-      run: npm run server
+      run: npm run server &
     - name: Install Playwright
       run: npx playwright install
     - name: Run test  
