@@ -23,7 +23,7 @@ jobs:
       run: npm install
     - name: Replace config.js to local settings
       run:
-        echo "export const settings = {host:'http//localhost:3030'}" >src/config.js 
+        echo "export const settings = {host:'http://localhost:3030'}" >src/config.js 
     - name: Run Back End  
       run: npm run server &
     - name: Run Front End
