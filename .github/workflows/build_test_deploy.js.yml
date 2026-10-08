@@ -2,55 +2,61 @@ name: Build test and deploy
 
 on:
   push:
-    branches: [ "main" ]
+    branches: ["main"]
   pull_request:
-    branches: [ "main" ]
+    branches: ["main"]
 
 jobs:
   build_test:
-
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v4
-    - name: Use Node.js 24.x
-      uses: actions/setup-node@v4
-      with:
-        node-version: 24.x
-        cache: 'npm'
-    - name: Install node packages      
-      run: npm install
-    - name: Replace config.js to local settings
-      run:
-        echo "export const settings = {host:'http://localhost:3030'}" >src/config.js 
-    - name: Run Back End  
-      run: npm run server &
-    - name: Run Front End
-      run: npm run start &
-    - name: Install Playwright
-      run: npx playwright install
-    - name: Run test  
-      run: npm test
-  
-  deploy_ back_end_to_render:
-      needs: build_test
-      runs-on: ubuntu-latest
-      
-      steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Use Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+          cache: "npm"
+
+      - name: Install node packages
+        run: npm install
+
+      - name: Replace config.js to local settings
+        run: |
+          echo "export const settings = {host:'http://localhost:3030'}" > src/config.js
+
+      - name: Run Back End
+        run: npm run server &
+
+      - name: Run Front End
+        run: npm run start &
+
+      - name: Install Playwright
+        run: npx playwright install
+
+      - name: Run test
+        run: npm test
+
+  deploy_back_end_to_render:
+    needs: build_test
+    runs-on: ubuntu-latest
+
+    steps:
       - uses: JorgeLNJunior/render-deploy@v1.5.0
         with:
           service_id: ${{ secrets.SERVICE_KEY_BACK_END }}
           api_key: ${{ secrets.MY_RENDER_API_KEY }}
           wait_deploy: true
-  
-  deploy_ front_end_to_render:
-      needs: deploy_ back_end_to_render
-      runs-on: ubuntu-latest
-      
-      steps:
+
+  deploy_front_end_to_render:
+    needs: deploy_back_end_to_render
+    runs-on: ubuntu-latest
+
+    steps:
       - uses: JorgeLNJunior/render-deploy@v1.5.0
         with:
           service_id: ${{ secrets.SERVICE_KEY_FRONT_END }}
           api_key: ${{ secrets.MY_RENDER_API_KEY }}
-          wait_deploy: true        
+          wait_deploy: true
