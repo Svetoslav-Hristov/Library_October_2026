@@ -7,7 +7,7 @@ on:
     branches: [ "main" ]
 
 jobs:
-  build:
+  build_test:
 
     runs-on: ubuntu-latest
 
@@ -32,3 +32,25 @@ jobs:
       run: npx playwright install
     - name: Run test  
       run: npm test
+  
+  deploy_ back_end_to_render:
+      needs: build_test
+      runs-on: ubuntu-latest
+      
+      steps:
+      - uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.SERVICE_KEY_BACK_END }}
+          api_key: ${{ secrets.MY_RENDER_API_KEY }}
+          wait_deploy: true
+  
+  deploy_ front_end_to_render:
+      needs: deploy_ back_end_to_render
+      runs-on: ubuntu-latest
+      
+      steps:
+      - uses: JorgeLNJunior/render-deploy@v1.5.0
+        with:
+          service_id: ${{ secrets.SERVICE_KEY_FRONT_END }}
+          api_key: ${{ secrets.MY_RENDER_API_KEY }}
+          wait_deploy: true        
