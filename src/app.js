@@ -17,6 +17,7 @@ import { profilePage } from './views/profile.js';
 
 
 const main = document.querySelector('main');
+let activeRoute = 0;
 setUserNav();
 document.getElementById('logoutBtn').addEventListener('click', logout);
 
@@ -31,7 +32,12 @@ page('/profile', decorateContext, profilePage);
 
 page.start();
 function decorateContext(ctx, next) {
-    ctx.render = (content) => render(content, main);
+    const route = ++activeRoute;
+    ctx.render = (content) => {
+        if (route === activeRoute) {
+            render(content, main);
+        }
+    };
     ctx.setUserNav = setUserNav;
     next();
 }
@@ -54,5 +60,5 @@ function setUserNav() {
 async function logout() {
     await apiLogout();
     setUserNav();
-    page.redirect('/');
+    page.redirect('/catalog');
 }

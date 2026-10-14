@@ -28,7 +28,10 @@ test('Verify "All Books" link is visible after user login', async ({ page }) => 
 
   await page.fill('input[name="email"]', 'peter@abv.bg');
   await page.fill('input[name="password"]', '123456');
-  await page.click('input[type="submit"]');
+  await Promise.all([
+    page.click('input[type="submit"]'),
+    page.waitForURL('http://localhost:3000/catalog')
+  ]);
 
   const allBooksLink = await page.$('a[href="/catalog"]');
   const isAllBooksLinkVisible = await allBooksLink.isVisible();
@@ -42,7 +45,10 @@ test('Login with valid credentials', async ({ page }) => {
   await page.fill('input[name="email"]', 'peter@abv.bg');
   await page.fill('input[name="password"]', '123456');
 
-  await page.click('input[type="submit"]');
+  await Promise.all([
+    page.click('input[type="submit"]'),
+    page.waitForURL('http://localhost:3000/catalog')
+  ]);
 
   await page.$('a[href="/catalog"]');
   expect(page.url()).toBe('http://localhost:3000/catalog');
@@ -50,16 +56,17 @@ test('Login with valid credentials', async ({ page }) => {
 
 test('Login with empty input fields', async ({ page }) => {
   await page.goto('http://localhost:3000/login');
-  await page.click('input[type="submit"]');
-
-  page.on('dialog', async dialog => {
-      expect(dialog.type()).toContain('alert');   
+  const dialogPromise = page.waitForEvent('dialog');
+  await Promise.all([
+    page.click('input[type="submit"]'),
+    dialogPromise.then(async dialog => {
+      expect(dialog.type()).toBe('alert');
       expect(dialog.message()).toContain('All fields are required!');
       await dialog.accept();
-    });
+    })
+  ]);
 
-    await page.$('a[href="/login"]');
-    expect(page.url()).toBe('http://localhost:3000/login');
+  expect(page.url()).toBe('http://localhost:3000/login');
 });
 
 test('Add book with correct data', async ({ page }) => {
@@ -108,15 +115,16 @@ test('Add book with empty title field', async ({ page }) => {
   await page.fill('#image', 'https://example.com/book-image.jpg');
   await page.selectOption('#type', 'Fiction');
 
-  await page.click('#create-form input[type="submit"]');
+  const dialogPromise = page.waitForEvent('dialog');
+  await Promise.all([
+    page.click('#create-form input[type="submit"]'),
+    dialogPromise.then(async dialog => {
+      expect(dialog.type()).toBe('alert');
+      expect(dialog.message()).toContain('All fields are required!');
+      await dialog.accept();
+    })
+  ]);
 
-  page.on('dialog', async dialog => {
-    expect(dialog.type()).toContain('alert');   
-    expect(dialog.message()).toContain('All fields are required!');
-    await dialog.accept();
-  });
-
-  await page.$('a[href="/create"]');
   expect(page.url()).toBe('http://localhost:3000/create');
 });
 
@@ -166,7 +174,10 @@ test('Verify visibility of Logout button after user login', async ({ page }) => 
 
   await page.fill('input[name="email"]', 'peter@abv.bg');
   await page.fill('input[name="password"]', '123456');
-  await page.click('input[type="submit"]');
+  await Promise.all([
+    page.click('input[type="submit"]'),
+    page.waitForURL('http://localhost:3000/catalog')
+  ]);
 
   const logoutLink = await page.$('a[href="javascript:void(0)"]');
 
@@ -180,10 +191,16 @@ test('Verify redirection of Logout link after user login', async ({ page }) => {
 
   await page.fill('input[name="email"]', 'peter@abv.bg');
   await page.fill('input[name="password"]', '123456');
-  await page.click('input[type="submit"]');
+  await Promise.all([
+    page.click('input[type="submit"]'),
+    page.waitForURL('http://localhost:3000/catalog')
+  ]);
 
   const logoutLink = await page.$('a[href="javascript:void(0)"]');
-  await logoutLink.click();
+  await Promise.all([
+    logoutLink.click(),
+    page.waitForURL('http://localhost:3000/catalog')
+  ]);
 
   const redirectedURL = page.url();
   expect(redirectedURL).toBe('http://localhost:3000/catalog');
